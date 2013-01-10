@@ -3,6 +3,7 @@
 # TODO 
 # 1. create ec2 instance 
 # 2. return publick DNS
+# usage: ./ec2_create_instance.sh
 
 
 # define exit status 
