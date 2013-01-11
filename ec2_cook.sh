@@ -16,7 +16,7 @@ if [ "$pub_dns" == "" ]; then
   echo "Please pass a ec2 hostname as the first argument"
   exit  $NO_HOST_EXIT
 else
-  knife cook -i $KEYPAIR ubuntu@$pub_dns
+  knife cook -i $KEYPAIR_FILE ubuntu@$pub_dns
 fi
 
 

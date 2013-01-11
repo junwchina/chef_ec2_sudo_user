@@ -9,6 +9,6 @@ REGION='us-east-1'          # you can set the closest localtion for your server.
 KEYPAIR='amazon-keypair'    # our default keypair
 
 
-KEYPAIR=~/.ec2/amazon-keypair
+KEYPAIR_FILE=~/.ec2/amazon-keypair
 INSTANCE_PUB_DNS_FILE=/tmp/.ec2_public_dns          # save pub dns to a tmp file
 INSTANCE_ID_FILE=/tmp/.ec2_instance_id              # save instance_id to a tmp file
