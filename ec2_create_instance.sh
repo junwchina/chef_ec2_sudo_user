@@ -24,7 +24,7 @@ function create_instance {
     echo "$res";
     exit $CREATE_INSTANCE_FAILED;
   else 
-    INSTANCE_ID=$(echo "$res"| grep INSTANCE | awk '{print $2}')
+    INSTANCE_ID=$(echo "$res"| grep -e '\bINSTANCE\b' | awk '{print $2}')
   fi
 }
 
@@ -93,7 +93,17 @@ function create_user {
   ## Install User
   knife prepare -i $KEYPAIR_FILE ubuntu@$PUBLIC_DNS
     
+  if [ $? -ne 0 ]; then 
+    echo "Please check your config and try again."
+    exit $?
+  fi
+  
   knife cook -i $KEYPAIR_FILE ubuntu@$PUBLIC_DNS
+
+  if [ $? -ne 0 ]; then 
+    echo "Please check your config and try again."
+    exit $?
+  fi
 
   # remove node.json
   rm -f $node_json
