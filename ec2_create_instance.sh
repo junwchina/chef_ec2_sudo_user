@@ -93,10 +93,11 @@ function create_user {
   ## Install User
   knife prepare -i $KEYPAIR_FILE ubuntu@$PUBLIC_DNS
     
+  knife cook -i $KEYPAIR_FILE ubuntu@$PUBLIC_DNS
+
   # remove node.json
   rm -f $node_json
 
-  knife cook -i $KEYPAIR_FILE ubuntu@$PUBLIC_DNS
   echo ==========================================================
   echo "User has been created."
   echo "username:  focus"
