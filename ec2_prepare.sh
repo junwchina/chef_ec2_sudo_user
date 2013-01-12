@@ -26,7 +26,7 @@ else
     cp $DEFAULT_NODE_JSON $node_json
   fi
     
-  knife prepare -i $KEYPAIR_FILE ubuntu@$pub_dns
+  knife prepare focus@$pub_dns
 fi
 
 

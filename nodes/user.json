@@ -1,0 +1,16 @@
+{ "run_list": [
+    "recipe[user]",
+    "recipe[user::data_bag]"
+  ],
+  "users" : ["focus"], 
+  "sudo": {
+    "users": [
+      "focus"
+    ],
+    "groups": [
+      "focus"
+    ],
+    "passwordless": true
+  }
+}
+

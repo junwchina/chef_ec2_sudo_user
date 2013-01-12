@@ -5,6 +5,8 @@
 # 2. return publick DNS
 # usage: ./ec2_create_instance.sh
 
+# user json
+DEFAULT_NODE_JSON=./nodes/user.json
 
 # define exit status 
 CREATE_INSTANCE_FAILED=1 
@@ -27,7 +29,7 @@ function create_instance {
 }
 
 function get_pub_DNS {
-  pub_DNS=$(ec2-describe-instances $INSTANCE_ID | grep INSTANCE|awk '{print $4}')
+  pub_DNS=$(ec2-describe-instances $INSTANCE_ID | grep -e '\bINSTANCE\b'|awk '{print $4}')
   if [ $(echo "$pub_DNS" | grep "amazonaws.com") != "" ]; then 
     PUBLIC_DNS=$pub_DNS
   else 
@@ -35,15 +37,73 @@ function get_pub_DNS {
   fi
 }
 
+
+function get_sys_status {
+  ec2-describe-instance-status $INSTANCE_ID|grep -e '\bINSTANCE\b' |awk '{print $6}'
+}
+
+
+function get_instance_status {
+  ec2-describe-instance-status $INSTANCE_ID|grep -e '\bINSTANCE\b' |awk '{print $NF}'
+}
+
 function if_created_instance {
+  # check sys status
+  sys_stat=$(get_sys_status)
+  echo System status: $sys_stat
+  while [ "$sys_stat" != "ok" ]; do 
+    echo "EC2 instance is initializing."
+    sleep 2
+    sys_stat=$(get_sys_status)
+    echo System status: $sys_stat
+  done
+
+  # check instance status
+  instance_stat=$(get_instance_status)
+  echo Instance status: $instance_stat
+  while [ "$instance_stat" != "active" ]; do 
+    echo "EC2 instance is initializing."
+    sleep 2
+    instance_stat=$(get_instance_status)
+    echo Instance status: $instance_stat
+  done
+
+  # get pub dns
   get_pub_DNS
   while [ $PUBLIC_DNS == '' ]; do 
     echo "EC2 instance is creating, please wait a moment."
     sleep 2
     get_pub_DNS
   done
-  echo Your instance publick DNS is "$PUBLIC_DNS", please remember it, and you will use it later.
+  echo ==========================================================
+  echo You new ec2 instance have been created.
+  echo InstanceID: $INSTANCE_ID
+  echo Public DNS: $PUBLIC_DNS
+  echo Please remember it, because you will use it in the future.
+  echo ==========================================================
 }
+
+
+function create_user {
+  echo "Start to creating user......"
+  # create node.json 
+  node_json=./nodes/"$PUBLIC_DNS".json
+  cp $DEFAULT_NODE_JSON $node_json
+
+  ## Install User
+  knife prepare -i $KEYPAIR_FILE ubuntu@$PUBLIC_DNS
+    
+  # remove node.json
+  rm -f $node_json
+
+  knife cook -i $KEYPAIR_FILE ubuntu@$PUBLIC_DNS
+  echo ==========================================================
+  echo "User has been created."
+  echo "username:  focus"
+  echo "You can login to server by  ssh focus@"$PUBLIC_DNS" now"
+  echo ==========================================================
+}
+
 
 
 read -p "Do you want to create new ec2 instance? [Yy/Nn]" answer
@@ -51,6 +111,7 @@ case "$answer" in
   [yY])  
     create_instance 
     if_created_instance
+    create_user
     echo $INSTANCE_ID > $INSTANCE_ID_FILE
     echo $PUBLIC_DNS > $INSTANCE_PUB_DNS_FILE
     ;;
